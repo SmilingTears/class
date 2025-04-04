@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>班级小组评分系统</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2E7D32;
+            --light-color: #C8E6C9;
+            --dark-color: #1B5E20;
+            --text-color: #333;
+            --light-text: #fff;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #E0F7FA;
+            color: var(--text-color);
+            transition: background-color 0.5s ease;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1, h2, h3 {
+            margin: 0;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.05);
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin: 5px;
+            width: 200px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--light-color);
+            font-weight: bold;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .group {
+            margin-bottom: 30px;
+            border: 2px solid var(--light-color);
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .group-title {
+            font-size: 1.5em;
+            color: var(--dark-color);
+        }
+        
+        .group-score {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .leader {
+            background-color: #FFF9C4;
+        }
+        
+        .negative-score {
+            color: #F44336;
+            font-weight: bold;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from {transform: translateY(-50px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background-color: #ddd;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            margin-right: 5px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+        }
+        
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .highlight {
+            animation: highlight 1.5s;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: #FFF9C4; }
+            100% { background-color: transparent; }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-label {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #2196F3;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .file-label:hover {
+            background-color: #0b7dda;
+        }
+        
+        .download-btn {
+            background-color: #FF9800;
+        }
+        
+        .download-btn:hover {
+            background-color: #F57C00;
+        }
+        
+        .danger-btn {
+            background-color: #F44336;
+        }
+        
+        .danger-btn:hover {
+            background-color: #D32F2F;
+        }
+        
+        .success-btn {
+            background-color: #4CAF50;
+        }
+        
+        .success-btn:hover {
+            background-color: #388E3C;
+        }
+        
+        .sort-btn {
+            background-color: #9C27B0;
+        }
+        
+        .sort-btn:hover {
+            background-color: #7B1FA2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>班级小组评分系统</h1>
+            <p>管理班级小组和个人评分</p>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('groups')">小组管理</div>
+            <div class="tab" onclick="switchTab('ranking')">排行榜</div>
+            <div class="tab" onclick="switchTab('random')">随机抽取</div>
+            <div class="tab" onclick="switchTab('import-export')">导入/导出</div>
+        </div>
+        
+        <div id="groups" class="tab-content active">
+            <div class="section">
+                <h2>添加小组</h2>
+                <input type="text" id="newGroupName" placeholder="小组名称">
+                <button onclick="addGroup()">添加小组</button>
+            </div>
+            
+            <div id="groupsContainer">
+                <!-- 小组将在这里动态生成 -->
+                <div class="empty-state" id="noGroupsMessage">
+                    <i>📁</i>
+                    <h3>暂无小组</h3>
+                    <p>点击上方按钮添加第一个小组</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="ranking" class="tab-content">
+            <div class="section">
+                <h2>个人排行榜</h2>
+                <table id="individualRanking">
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>姓名</th>
+                            <th>小组</th>
+                            <th>分数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 个人排名将在这里动态生成 -->
+                    </tbody>
+                </table>
+                <div class="empty-state" id="noIndividualsMessage">
+                    <i>👤</i>
+                    <h3>暂无成员</h3>
+                    <p>请先添加小组和成员</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>小组排行榜</h2>
+                <table id="groupRanking">
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>小组名称</th>
+                            <th>小组分数</th>
+                            <th>成员平均分</th>
+                            <th>总分</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 小组排名将在这里动态生成 -->
+                    </tbody>
+                </table>
+                <div class="empty-state" id="noGroupsRankingMessage">
+                    <i>👥</i>
+                    <h3>暂无小组</h3>
+                    <p>请先添加小组</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="random" class="tab-content">
+            <div class="section">
+                <h2>随机抽取</h2>
+                <button onclick="randomStudent()">随机抽取学生</button>
+                <button onclick="randomGroup()">随机抽取小组</button>
+                
+                <div id="randomResult" style="margin-top: 20px; text-align: center; font-size: 24px; min-height: 100px; display: flex; justify-content: center; align-items: center;">
+                    <p>点击上方按钮开始随机抽取</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="import-export" class="tab-content">
+            <div class="section">
+                <h2>数据管理</h2>
+                <button class="download-btn" onclick="exportData()">导出数据</button>
+                <button onclick="importData()">导入数据</button>
+                <input type="file" id="fileInput" class="file-input" accept=".json,.xlsx">
+                <label for="fileInput" class="file-label">选择文件</label>
+                
+                <div style="margin-top: 20px;">
+                    <button class="download-btn" onclick="downloadTemplate()">下载Excel模板</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>@2025 SmilingTears</p>
+        </footer>
+    </div>
+    
+    <!-- 密码验证模态框 -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>请输入密码</h3>
+            <input type="password" id="passwordInput" class="password-input" placeholder="输入密码">
+            <button onclick="verifyPassword()">验证</button>
+            <p id="passwordError" style="color: red; display: none;">密码错误，请重试！</p>
+        </div>
+    </div>
+    
+    <!-- 添加成员模态框 -->
+    <div id="addMemberModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3>添加成员</h3>
+            <input type="text" id="newMemberName" placeholder="成员姓名">
+            <button onclick="addMemberToGroup()">添加</button>
+            <p id="addMemberError" style="color: red; display: none;">请输入成员姓名！</p>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // 全局变量
+        let groups = [];
+        let currentAction = null;
+        let currentGroupId = null;
+        let currentStudentId = null;
+        const PASSWORD = "789456";
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            updateUI();
+        });
+        
+        // 切换标签页
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+        
+        // 添加小组
+        function addGroup() {
+            const groupName = document.getElementById('newGroupName').value.trim();
+            
+            if (!groupName) {
+                alert('请输入小组名称！');
+                return;
+            }
+            
+            const newGroup = {
+                id: Date.now().toString(),
+                name: groupName,
+                score: 0,
+                members: []
+            };
+            
+            groups.push(newGroup);
+            document.getElementById('newGroupName').value = '';
+            saveData();
+            updateUI();
+        }
+        
+        // 删除小组
+        function deleteGroup(groupId) {
+            currentAction = 'deleteGroup';
+            currentGroupId = groupId;
+            showPasswordModal();
+        }
+        
+        // 确认删除小组
+        function confirmDeleteGroup() {
+            groups = groups.filter(group => group.id !== currentGroupId);
+            saveData();
+            updateUI();
+            closeModal();
+        }
+        
+        // 显示添加成员模态框
+        function showAddMemberModal(groupId) {
+            currentGroupId = groupId;
+            document.getElementById('addMemberModal').style.display = 'block';
+        }
+        
+        // 添加成员到小组
+        function addMemberToGroup() {
+            const memberName = document.getElementById('newMemberName').value.trim();
+            
+            if (!memberName) {
+                document.getElementById('addMemberError').style.display = 'block';
+                return;
+            }
+            
+            document.getElementById('addMemberError').style.display = 'none';
+            
+            const group = groups.find(g => g.id === currentGroupId);
+            if (group) {
+                group.members.push({
+                    id: Date.now().toString(),
+                    name: memberName,
+                    score: 0,
+                    isLeader: false
+                });
+                
+                document.getElementById('newMemberName').value = '';
+                closeModal();
+                saveData();
+                updateUI();
+            }
+        }
+        
+        // 删除成员
+        function deleteMember(groupId, memberId) {
+            currentAction = 'deleteMember';
+            currentGroupId = groupId;
+            currentStudentId = memberId;
+            showPasswordModal();
+        }
+        
+        // 确认删除成员
+        function confirmDeleteMember() {
+            const group = groups.find(g => g.id === currentGroupId);
+            if (group) {
+                group.members = group.members.filter(member => member.id !== currentStudentId);
+                saveData();
+                updateUI();
+            }
+            closeModal();
+        }
+        
+        // 设置组长
+        function setLeader(groupId, memberId) {
+            currentAction = 'setLeader';
+            currentGroupId = groupId;
+            currentStudentId = memberId;
+            showPasswordModal();
+        }
+        
+        // 确认设置组长
+        function confirmSetLeader() {
+            const group = groups.find(g => g.id === currentGroupId);
+            if (group) {
+                group.members.forEach(member => {
+                    member.isLeader = member.id === currentStudentId;
+                });
+                saveData();
+                updateUI();
+            }
+            closeModal();
+        }
+        
+        // 修改成员分数 - 已移除分数下限限制
+        function changeScore(groupId, memberId, change) {
+            const group = groups.find(g => g.id === groupId);
+            if (group) {
+                const member = group.members.find(m => m.id === memberId);
+                if (member) {
+                    member.score += change;
+                    saveData();
+                    updateUI();
+                    
+                    // 高亮显示
+                    const element = document.getElementById(`member-${memberId}`);
+                    if (element) {
+                        element.classList.add('highlight');
+                        setTimeout(() => {
+                            element.classList.remove('highlight');
+                        }, 1500);
+                    }
+                }
+            }
+        }
+        
+        // 修改小组分数 - 已移除分数下限限制
+        function changeGroupScore(groupId, change) {
+            const group = groups.find(g => g.id === groupId);
+            if (group) {
+                group.score += change;
+                saveData();
+                updateUI();
+                
+                // 高亮显示
+                const element = document.getElementById(`group-${groupId}`);
+                if (element) {
+                    element.classList.add('highlight');
+                    setTimeout(() => {
+                        element.classList.remove('highlight');
+                    }, 1500);
+                }
+            }
+        }
+        
+        // 随机抽取学生
+        function randomStudent() {
+            const allStudents = [];
+            groups.forEach(group => {
+                group.members.forEach(member => {
+                    allStudents.push({
+                        name: member.name,
+                        group: group.name
+                    });
+                });
+            });
+            
+            if (allStudents.length === 0) {
+                document.getElementById('randomResult').innerHTML = '<p>没有可抽取的学生！</p>';
+                return;
+            }
+            
+            // 动画效果
+            const resultDiv = document.getElementById('randomResult');
+            resultDiv.innerHTML = '<p>抽取中...</p>';
+            
+            let count = 0;
+            const interval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * allStudents.length);
+                const student = allStudents[randomIndex];
+                resultDiv.innerHTML = `<p>${student.name} <small>(${student.group})</small></p>`;
+                
+                count++;
+                if (count > 20) {
+                    clearInterval(interval);
+                }
+            }, 100);
+        }
+        
+        // 随机抽取小组
+        function randomGroup() {
+            if (groups.length === 0) {
+                document.getElementById('randomResult').innerHTML = '<p>没有可抽取的小组！</p>';
+                return;
+            }
+            
+            // 动画效果
+            const resultDiv = document.getElementById('randomResult');
+            resultDiv.innerHTML = '<p>抽取中...</p>';
+            
+            let count = 0;
+            const interval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * groups.length);
+                const group = groups[randomIndex];
+                resultDiv.innerHTML = `<p>${group.name}</p>`;
+                
+                count++;
+                if (count > 15) {
+                    clearInterval(interval);
+                }
+            }, 100);
+        }
+        
+        // 显示密码模态框
+        function showPasswordModal() {
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordError').style.display = 'none';
+            document.getElementById('passwordModal').style.display = 'block';
+        }
+        
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('addMemberModal').style.display = 'none';
+        }
+        
+        // 验证密码
+        function verifyPassword() {
+            const input = document.getElementById('passwordInput').value;
+            
+            if (input === PASSWORD) {
+                document.getElementById('passwordError').style.display = 'none';
+                
+                switch(currentAction) {
+                    case 'deleteGroup':
+                        confirmDeleteGroup();
+                        break;
+                    case 'deleteMember':
+                        confirmDeleteMember();
+                        break;
+                    case 'setLeader':
+                        confirmSetLeader();
+                        break;
+                }
+            } else {
+                document.getElementById('passwordError').style.display = 'block';
+            }
+        }
+        
+        // 更新UI
+        function updateUI() {
+            updateGroupsUI();
+            updateRankingUI();
+            checkEmptyStates();
+        }
+        
+        // 更新小组UI
+        function updateGroupsUI() {
+            const groupsContainer = document.getElementById('groupsContainer');
+            
+            if (groups.length === 0) {
+                groupsContainer.innerHTML = `
+                    <div class="empty-state" id="noGroupsMessage">
+                        <i>📁</i>
+                        <h3>暂无小组</h3>
+                        <p>点击上方按钮添加第一个小组</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            groupsContainer.innerHTML = '';
+            
+            groups.forEach(group => {
+                const groupElement = document.createElement('div');
+                groupElement.className = 'group';
+                groupElement.id = `group-${group.id}`;
+                
+                let membersHTML = '';
+                if (group.members.length > 0) {
+                    membersHTML = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>姓名</th>
+                                    <th>分数</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${group.members.map(member => `
+                                    <tr id="member-${member.id}" class="${member.isLeader ? 'leader' : ''}">
+                                        <td>
+                                            ${member.name}
+                                            ${member.isLeader ? ' 👑' : ''}
+                                        </td>
+                                        <td class="${member.score < 0 ? 'negative-score' : ''}">${member.score}</td>
+                                        <td>
+                                            <button onclick="changeScore('${group.id}', '${member.id}', -1)">-1</button>
+                                            <button onclick="changeScore('${group.id}', '${member.id}', 1)">+1</button>
+                                            <button onclick="changeScore('${group.id}', '${member.id}', -5)">-5</button>
+                                            <button onclick="changeScore('${group.id}', '${member.id}', 5)">+5</button>
+                                            <button onclick="setLeader('${group.id}', '${member.id}')">设组长</button>
+                                            <button class="danger-btn" onclick="deleteMember('${group.id}', '${member.id}')">删除</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    membersHTML = `
+                        <div class="empty-state">
+                            <i>👤</i>
+                            <p>暂无成员</p>
+                        </div>
+                    `;
+                }
+                
+                const totalScore = group.score + group.members.reduce((sum, member) => sum + member.score, 0);
+                
+                groupElement.innerHTML = `
+                    <div class="group-header">
+                        <h3 class="group-title">${group.name}</h3>
+                        <div class="group-score">总分: ${totalScore} (小组分: ${group.score})</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <button onclick="showAddMemberModal('${group.id}')">添加成员</button>
+                        <button class="danger-btn" onclick="deleteGroup('${group.id}')">删除小组</button>
+                        <button onclick="changeGroupScore('${group.id}', -1)">小组-1</button>
+                        <button onclick="changeGroupScore('${group.id}', 1)">小组+1</button>
+                        <button onclick="changeGroupScore('${group.id}', -5)">小组-5</button>
+                        <button onclick="changeGroupScore('${group.id}', 5)">小组+5</button>
+                        <button class="sort-btn" onclick="sortMembers('${group.id}', 'name')">按姓名排序</button>
+                        <button class="sort-btn" onclick="sortMembers('${group.id}', 'score')">按分数排序</button>
+                    </div>
+                    
+                    ${membersHTML}
+                `;
+                
+                groupsContainer.appendChild(groupElement);
+            });
+        }
+        
+        // 排序成员
+        function sortMembers(groupId, by) {
+            const group = groups.find(g => g.id === groupId);
+            if (group) {
+                if (by === 'name') {
+                    group.members.sort((a, b) => a.name.localeCompare(b.name));
+                } else if (by === 'score') {
+                    group.members.sort((a, b) => b.score - a.score);
+                }
+                saveData();
+                updateUI();
+            }
+        }
+        
+        // 更新排行榜UI
+        function updateRankingUI() {
+            updateIndividualRanking();
+            updateGroupRanking();
+        }
+        
+        // 更新个人排行榜
+        function updateIndividualRanking() {
+            const allMembers = [];
+            groups.forEach(group => {
+                group.members.forEach(member => {
+                    allMembers.push({
+                        name: member.name,
+                        group: group.name,
+                        score: member.score
+                    });
+                });
+            });
+            
+            // 按分数排序
+            allMembers.sort((a, b) => b.score - a.score);
+            
+            const tbody = document.querySelector('#individualRanking tbody');
+            tbody.innerHTML = '';
+            
+            allMembers.forEach((member, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${member.name}</td>
+                    <td>${member.group}</td>
+                    <td class="${member.score < 0 ? 'negative-score' : ''}">${member.score}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // 更新小组排行榜
+        function updateGroupRanking() {
+            const groupScores = groups.map(group => {
+                const memberSum = group.members.reduce((sum, member) => sum + member.score, 0);
+                const memberAvg = group.members.length > 0 ? memberSum / group.members.length : 0;
+                const totalScore = group.score + memberSum;
+                
+                return {
+                    name: group.name,
+                    groupScore: group.score,
+                    memberAvg: memberAvg.toFixed(1),
+                    totalScore: totalScore
+                };
+            });
+            
+            // 按总分排序
+            groupScores.sort((a, b) => b.totalScore - a.totalScore);
+            
+            const tbody = document.querySelector('#groupRanking tbody');
+            tbody.innerHTML = '';
+            
+            groupScores.forEach((group, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${group.name}</td>
+                    <td class="${group.groupScore < 0 ? 'negative-score' : ''}">${group.groupScore}</td>
+                    <td>${group.memberAvg}</td>
+                    <td class="${group.totalScore < 0 ? 'negative-score' : ''}">${group.totalScore}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // 检查空状态
+        function checkEmptyStates() {
+            // 检查小组
+            const noGroupsMessage = document.getElementById('noGroupsMessage');
+            if (noGroupsMessage) {
+                noGroupsMessage.style.display = groups.length === 0 ? 'block' : 'none';
+            }
+            
+            // 检查个人排行榜
+            const allMembers = groups.reduce((sum, group) => sum + group.members.length, 0);
+            document.getElementById('noIndividualsMessage').style.display = allMembers === 0 ? 'block' : 'none';
+            
+            // 检查小组排行榜
+            document.getElementById('noGroupsRankingMessage').style.display = groups.length === 0 ? 'block' : 'none';
+        }
+        
+        // 导出数据
+        function exportData() {
+            const data = {
+                groups: groups,
+                exportedAt: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `班级评分系统_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // 导入数据
+        function importData() {
+            document.getElementById('fileInput').click();
+        }
+        
+        // 处理文件导入
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            
+            if (file.name.endsWith('.json')) {
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.groups) {
+                            if (confirm('导入数据将覆盖当前所有数据，确定要继续吗？')) {
+                                groups = data.groups;
+                                saveData();
+                                updateUI();
+                                alert('数据导入成功！');
+                            }
+                        } else {
+                            alert('无效的数据文件！');
+                        }
+                    } catch (error) {
+                        alert('解析JSON文件时出错: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            } else if (file.name.endsWith('.xlsx')) {
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                        
+                        if (confirm('导入Excel数据将覆盖当前所有数据，确定要继续吗？')) {
+                            importFromExcel(jsonData);
+                            alert('数据导入成功！');
+                        }
+                    } catch (error) {
+                        alert('解析Excel文件时出错: ' + error.message);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                alert('请选择.json或.xlsx文件！');
+            }
+            
+            // 重置文件输入，以便可以再次选择同一个文件
+            e.target.value = '';
+        });
+        
+        // 从Excel导入数据
+        function importFromExcel(data) {
+            groups = [];
+            
+            // 假设Excel格式为：小组名称 | 成员姓名 | 分数 | 是否组长
+            const groupMap = {};
+            
+            data.forEach(row => {
+                const groupName = row['小组名称'] || '';
+                const memberName = row['成员姓名'] || '';
+                const score = parseInt(row['分数']) || 0;
+                const isLeader = Boolean(row['是否组长']);
+                
+                if (!groupName) return;
+                
+                if (!groupMap[groupName]) {
+                    groupMap[groupName] = {
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        name: groupName,
+                        score: 0,
+                        members: []
+                    };
+                }
+                
+                if (memberName) {
+                    groupMap[groupName].members.push({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
+                        name: memberName,
+                        score: score,
+                        isLeader: isLeader
+                    });
+                }
+            });
+            
+            groups = Object.values(groupMap);
+            saveData();
+            updateUI();
+        }
+        
+        // 下载Excel模板
+        function downloadTemplate() {
+            const templateData = [
+                { '小组名称': '第一组', '成员姓名': '张三', '分数': 10, '是否组长': true },
+                { '小组名称': '第一组', '成员姓名': '李四', '分数': 8, '是否组长': false },
+                { '小组名称': '第二组', '成员姓名': '王五', '分数': 12, '是否组长': true }
+            ];
+            
+            const worksheet = XLSX.utils.json_to_sheet(templateData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, '小组名单');
+            
+            XLSX.writeFile(workbook, '小组评分系统模板.xlsx');
+        }
+        
+        // 保存数据到本地存储
+        function saveData() {
+            localStorage.setItem('classGroupSystemData', JSON.stringify(groups));
+        }
+        
+        // 从本地存储加载数据
+        function loadData() {
+            const savedData = localStorage.getItem('classGroupSystemData');
+            if (savedData) {
+                try {
+                    groups = JSON.parse(savedData);
+                } catch (error) {
+                    console.error('解析保存的数据时出错:', error);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
