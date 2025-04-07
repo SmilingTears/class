@@ -570,7 +570,7 @@
             closeModal();
         }
         
-        // 修改成员分数 - 已移除分数下限限制
+        // 修改成员分数 - 无下限
         function changeScore(groupId, memberId, change) {
             const group = groups.find(g => g.id === groupId);
             if (group) {
@@ -592,7 +592,7 @@
             }
         }
         
-        // 修改小组分数 - 已移除分数下限限制
+        // 修改小组分数 - 无下限
         function changeGroupScore(groupId, change) {
             const group = groups.find(g => g.id === groupId);
             if (group) {
@@ -609,6 +609,33 @@
                     }, 1500);
                 }
             }
+        }
+        
+        // 导出数据 - 需要密码验证
+        function exportData() {
+            currentAction = 'exportData';
+            showPasswordModal();
+        }
+        
+        // 确认导出数据
+        function confirmExportData() {
+            const data = {
+                groups: groups,
+                exportedAt: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `班级评分系统_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            closeModal();
         }
         
         // 随机抽取学生
@@ -698,6 +725,9 @@
                         break;
                     case 'setLeader':
                         confirmSetLeader();
+                        break;
+                    case 'exportData':
+                        confirmExportData();
                         break;
                 }
             } else {
@@ -900,25 +930,6 @@
             
             // 检查小组排行榜
             document.getElementById('noGroupsRankingMessage').style.display = groups.length === 0 ? 'block' : 'none';
-        }
-        
-        // 导出数据
-        function exportData() {
-            const data = {
-                groups: groups,
-                exportedAt: new Date().toISOString()
-            };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `班级评分系统_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
         }
         
         // 导入数据
